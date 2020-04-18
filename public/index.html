@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Authentication</title>
+</head>
+
+<body>
+    <div>
+        <form id='foobar'>
+           <div>Username:</div> <input name='username' />
+           <div>Password:</div>  <input name='password' />
+           <div></div> <input id="formSubmit" type='submit' />
+          </form>
+        <p id="datos">
+
+        </p>
+    </div>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript">
+            document.getElementById('foobar').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const dataForm = Array.from(formData.entries()).reduce((memo, pair) => ({
+                ...memo,
+                [pair[0]]: pair[1],
+            }), {});
+
+            $(document).ready(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "/login",
+                    data: dataForm,
+                    dataType: 'json',
+                    success: function (data) {
+                        localStorage.token = data.token;
+                        alert('Got a token from the server! Token: ' + data.token);
+                        $.ajax({
+                            type: 'GET',
+                            url: '/users',
+                            beforeSend: function (xhr) {
+                                if (localStorage.token) {
+                                    xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.token);
+                                }
+                            },
+                            success: function (datos) {
+
+                                alert('Hello! You have successfully accessed to the data');
+                                $('#datos').text(datos.message);
+                                $('#foobar').html("");
+                            },
+                            error: function () {
+                                alert("Sorry, you are not logged in.");
+                            }
+                        });
+                    },
+                    error: function () {
+                        alert("Login Failed");
+                    }
+                });
+            
+
+        });
+
+        });
+       
+    </script>
+</body>
+
+</html>
